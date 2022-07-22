@@ -1,9 +1,6 @@
 use std::{
-    hash::{
-        Hash,
-        Hasher,
-    },
     cmp::Ordering,
+    hash::{Hash, Hasher},
     os::raw::c_int,
     sync::Weak,
 };
@@ -11,7 +8,6 @@ use std::{
 use inotify_sys as ffi;
 
 use crate::fd_guard::FdGuard;
-
 
 bitflags! {
     /// Describes a file system watch
@@ -274,7 +270,6 @@ bitflags! {
     }
 }
 
-
 /// Represents a watch on an inode
 ///
 /// Can be obtained from [`Inotify::add_watch`] or from an [`Event`]. A watch
@@ -285,16 +280,26 @@ bitflags! {
 /// [`Inotify::rm_watch`]: struct.Inotify.html#method.rm_watch
 /// [`Event`]: struct.Event.html
 #[derive(Clone, Debug)]
-pub struct WatchDescriptor{
+pub struct WatchDescriptor {
     pub(crate) id: c_int,
     pub(crate) fd: Weak<FdGuard>,
+}
+
+impl WatchDescriptor {
+    /// Getter method for a watcher's id
+    ///
+    /// Can be used to distinguish events for files
+    /// with the same name
+    pub fn get_watch_descriptor_id(&self) -> c_int {
+        self.id
+    }
 }
 
 impl Eq for WatchDescriptor {}
 
 impl PartialEq for WatchDescriptor {
     fn eq(&self, other: &Self) -> bool {
-        let self_fd  = self.fd.upgrade();
+        let self_fd = self.fd.upgrade();
         let other_fd = other.fd.upgrade();
 
         self.id == other.id && self_fd.is_some() && self_fd == other_fd
